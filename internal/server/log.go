@@ -17,8 +17,8 @@ func NewCommitLog() *CommitLog {
 }
 
 type Record struct {
-	Offset uint64 // This identifies the index at which the record will be stored in the log. We choose an unsigned integer here because we should never try to store a record at a negative number offset.
-	Value  []byte
+	Offset uint64 `json:"offset"` // This identifies the index at which the record will be stored in the log. We choose an unsigned integer here because we should never try to store a record at a negative number offset.
+	Value  []byte `json:"value"`
 }
 
 // Append adds a record onto the commit log.
