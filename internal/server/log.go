@@ -7,6 +7,9 @@ import (
 
 var ErrOffsetNotFound = fmt.Errorf("record at given offset not found")
 
+// A CommitLog is a data structure for storing a list of records,
+// where new records can be appended to it, but old records cannot be modified later.
+// This is good for use cases where order and accurate history is crucial, like a transaction ledger.
 type CommitLog struct {
 	mu      sync.Mutex
 	records []Record
