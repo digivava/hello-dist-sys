@@ -7,13 +7,16 @@ import (
 
 var ErrOffsetNotFound = fmt.Errorf("record at given offset not found")
 
-type CommitLog struct {
+// A WriteAheadLog is a data structure for storing a list of records,
+// where new records can be appended to it, but old records cannot be modified later.
+// This is good for use cases where order and accurate history is crucial, like a transaction ledger.
+type WriteAheadLog struct {
 	mu      sync.Mutex
 	records []Record
 }
 
-func NewCommitLog() *CommitLog {
-	return &CommitLog{}
+func NewWriteAheadLog() *WriteAheadLog {
+	return &WriteAheadLog{}
 }
 
 type Record struct {
@@ -21,30 +24,30 @@ type Record struct {
 	Value  []byte `json:"value"`
 }
 
-// Append adds a record onto the commit log.
-func (cl *CommitLog) Append(record Record) (uint64, error) {
+// Append adds a record onto the write-ahead log.
+func (wal *WriteAheadLog) Append(record Record) (uint64, error) {
 	// A mutex is used to ensure that only one
-	// caller can access the commit log at a given time.
-	cl.mu.Lock()
-	defer cl.mu.Unlock()
+	// caller can access the write-ahead log at a given time.
+	wal.mu.Lock()
+	defer wal.mu.Unlock()
 
-	record.Offset = uint64(len(cl.records))
-	cl.records = append(cl.records, record)
+	record.Offset = uint64(len(wal.records))
+	wal.records = append(wal.records, record)
 
 	return record.Offset, nil
 }
 
-// Read retrieves a record from our commit log. We specify the location in the
-// commit log of our desired record using the offset that the record was originally written to.
-func (cl *CommitLog) Read(offset uint64) (Record, error) {
+// Read retrieves a record from our write-ahead log. We specify the location in the
+// log of our desired record using the offset that the record was originally written to.
+func (wal *WriteAheadLog) Read(offset uint64) (Record, error) {
 	// A mutex is used to ensure that only one
-	// caller can access the commit log at a given time.
-	cl.mu.Lock()
-	defer cl.mu.Unlock()
+	// caller can access the write-ahead log at a given time.
+	wal.mu.Lock()
+	defer wal.mu.Unlock()
 
-	if offset >= uint64(len(cl.records)) {
+	if offset >= uint64(len(wal.records)) {
 		return Record{}, ErrOffsetNotFound
 	}
 
-	return cl.records[offset], nil
+	return wal.records[offset], nil
 }
