@@ -16,7 +16,13 @@ For other concepts used in this repo, click the items in the list below to find 
 
 To start up the application's web server so you can start making HTTP requests against it, run `make run`.
 
-Then you can create new records with your HTTP client of choice like this: `curl -XPOST http://localhost:8080 -d '{"record": {"value": "YmxhcmdoCg=="}}'`. This will return the offset for your newly created record in the write-ahead log. (We pass a base64-encoded value because we're working with the `[]byte` type in Go, and Go's `encoding/json` package encodes `[]byte` as a base64-encoded string. Use `echo "foo" | base64` to create a base64-encoded string.)
+Then you can create new records with your HTTP client of choice like this: 
+
+`curl -XPOST http://localhost:8080 -d '{"record": {"value": "YmxhcmdoCg=="}}'`. 
+
+This will return the offset for your newly created record in the write-ahead log. 
+
+(We pass a base64-encoded value because we're working with the `[]byte` type in Go, and Go's `encoding/json` package encodes `[]byte` as a base64-encoded string. Use `echo "foo" | base64` to create a base64-encoded string.)
 
 To fetch an existing record, use `curl -XGET http://localhost:8080/{offset}`, where offset is the unique location in the write-ahead log that was returned to you when you created a record. It should be a number, like 0 for the first record you create.
 
