@@ -10,7 +10,7 @@ import (
 )
 
 type logService struct {
-	CommitLog *CommitLog
+	WriteAheadLog *WriteAheadLog
 }
 
 type WriteRequest struct {
@@ -31,7 +31,7 @@ type ReadResponse struct {
 
 func NewHTTPServer(addr string) *http.Server {
 	svc := &logService{
-		CommitLog: NewCommitLog(),
+		WriteAheadLog: NewWriteAheadLog(),
 	}
 
 	r := mux.NewRouter()
@@ -53,7 +53,7 @@ func (svc *logService) handleWrite(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	off, err := svc.CommitLog.Append(req.Record)
+	off, err := svc.WriteAheadLog.Append(req.Record)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("unable to append record to log: %s", err.Error()), http.StatusInternalServerError)
 		return
@@ -77,7 +77,7 @@ func (svc *logService) handleRead(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rec, err := svc.CommitLog.Read(off)
+	rec, err := svc.WriteAheadLog.Read(off)
 	if err != nil {
 		if err == ErrOffsetNotFound {
 			http.Error(w, fmt.Sprintf("unable to locate record: %s", err.Error()), http.StatusNotFound)
